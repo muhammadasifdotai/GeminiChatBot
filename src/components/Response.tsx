@@ -25,10 +25,10 @@ export default function Response(props) {
 		<View style={styles.response}>
 			<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
 				<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-					<Image source={require("../assets//images/robot.png")} style={styles.icon} />
-					<Text style={{ fontWeight: 600 }}>Gemini</Text>
+					<Image source={require("../assets//images/Gemini.png")} style={styles.icon} />
+					<Text style={{ fontWeight: 600}}>Gemini</Text>
 				</View>
-				<Text style={{ fontSize: 10, fontWeight: "600" }}>
+				<Text style={{ fontSize: 12, fontWeight: "600" }}>
 					{date.getHours()}:{date.getMinutes()}
 				</Text>
 			</View>
@@ -41,13 +41,13 @@ const styles = StyleSheet.create({
 	response: {
 		flexDirection: "column",
 		gap: 8,
-		backgroundColor: "#fafafa",
+		backgroundColor: "#f1f2f3",
 		marginBottom: 8,
 		padding: 16,
 		borderRadius: 16,
 	},
 	icon: {
-		width: 28,
-		height: 28,
+		width: 40,
+		height: 40,
 	},
 });

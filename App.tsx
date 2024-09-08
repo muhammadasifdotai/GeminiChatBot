@@ -9,6 +9,11 @@ export default function App() {
     const flatListRef = useRef(null);
 
     const SearchInput = () => {
+        if (inputText.trim() === "") {
+            // Prevent sending an empty message
+            return;
+        }
+
         setListData((prevList) => [...prevList, inputText]);
         setInputText("");
 
@@ -36,7 +41,7 @@ export default function App() {
 
             {/* Header */}
             <View style={styles.header}>
-                <Image source={require("./src/assets/images/robot.png")} style={styles.icon} />
+                <Image source={require("./src/assets/images/Gemini.png")} style={styles.icon} />
                 <Text style={{ fontSize: 24, fontWeight: "800", color: "#323232" }}>Gemini AI</Text>
                 <TouchableOpacity onPress={clearAllChat} style={styles.clearButton}>
                     <Text style={{ color: "#FF0000", fontWeight: "bold" }}>Clear All</Text>
@@ -48,6 +53,7 @@ export default function App() {
                 ref={flatListRef}
                 style={{ paddingHorizontal: 16, marginBottom: 80 }}
                 data={listData}
+                showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                     <View>
                         <Message message={item} />
@@ -62,16 +68,16 @@ export default function App() {
             {listData.length > 0 && (
                 <View style={styles.goToBottomContainer}>
                     <TouchableOpacity onPress={scrollToBottom} style={styles.goToBottomButton}>
-                        <Text style={{ color: "#0000FF", fontWeight: "bold" }}>Go to Bottom</Text>
+                        <Image source={require("./src/assets/images/DownArrow.png")} style={styles.Arrow} />
                     </TouchableOpacity>
                 </View>
             )}
 
             {/* Search-Bar */}
             <View style={styles.searchBar}>
-                <TextInput placeholder="Ask to Gemini AI" style={styles.input} value={inputText} onChangeText={(text) => setInputText(text)} selectionColor={"#323232"} />
-                <TouchableOpacity onPress={SearchInput}>
-                    <Image source={require("./src/assets/images/right-arrow.png")} style={styles.icon} />
+                <TextInput placeholder="Ask to Gemini AI" placeholderTextColor={'black'} style={styles.input} value={inputText} onChangeText={(text) => setInputText(text)} selectionColor={"#323232"} />
+                <TouchableOpacity onPress={SearchInput} style={styles.send}>
+                    <Image source={require("./src/assets/images/Message.png")} style={styles.message} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -82,19 +88,27 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         gap: 16,
-        paddingTop: 36,
     },
     header: {
+        backgroundColor: "#55E6C1",
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 16,
-        margin: 8,
+        paddingVertical: 20,
         gap: 8,
         justifyContent: "space-between",
     },
     icon: {
-        width: 32,
-        height: 32,
+        width: 60,
+        height: 60,
+    },
+    message: {
+        width: 40,
+        height: 40,
+    },
+    Arrow: {
+        width: 30,
+        height: 30,
     },
     clearButton: {
         padding: 8,
@@ -108,8 +122,14 @@ const styles = StyleSheet.create({
     },
     goToBottomButton: {
         padding: 8,
-        backgroundColor: "#fff",
-        borderRadius: 8,
+        backgroundColor: "#CAD3C8",
+        borderRadius: 30,
+    },
+    send: {
+        backgroundColor: '#55E6C1',
+        borderRadius: 40,
+        padding: 5,
+        marginRight: 5,
     },
     searchBar: {
         backgroundColor: "#ffffff",
@@ -124,12 +144,13 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     input: {
-        backgroundColor: "#fff",
-        width: "100%",
+        backgroundColor: "#d1ccc0",
+        width: "90%",
         fontSize: 16,
         paddingVertical: 16,
         paddingHorizontal: 24,
         borderRadius: 32,
         borderWidth: 0.1,
+        marginLeft: 11,
     },
 });
