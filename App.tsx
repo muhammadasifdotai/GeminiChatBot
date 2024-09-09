@@ -107,8 +107,8 @@ const styles = StyleSheet.create({
         height: 40,
     },
     Arrow: {
-        width: 30,
-        height: 30,
+        width: 20,
+        height: 20,
     },
     clearButton: {
         padding: 8,
