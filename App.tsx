@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   StyleSheet,
   StatusBar,
@@ -8,7 +8,11 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  SafeAreaView,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
+import Voice from '@react-native-voice/voice';
 import Message from './src/components/Message';
 import Response from './src/components/Response';
 import {SVG} from './src/assets';
@@ -16,7 +20,59 @@ import {SVG} from './src/assets';
 export default function App() {
   const [inputText, setInputText] = useState('');
   const [listData, setListData] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
   const flatListRef = useRef(null);
+
+  useEffect(() => {
+    Voice.onSpeechStart = onSpeechStart;
+    Voice.onSpeechEnd = stopListing;
+    Voice.onSpeechResults = onSpeechResults;
+    Voice.onSpeechError = error => console.log('onSpeechError', error);
+
+    const androidPermissionChecking = async () => {
+      if (Platform.OS === 'android') {
+        const hasPermission = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        );
+        console.log('androidPermissionChecking hasPermission : ', hasPermission);
+      }
+    };
+    androidPermissionChecking();
+
+    // for removing all listener
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const onSpeechStart = event => {
+    console.log('Recording Started...: ', event);
+  };
+
+  const onSpeechResults = event => {
+    const text = event.value[0];
+    setRecognizedText(text);
+  };
+
+  const startListing = async () => {
+    setIsListening(true);
+    try {
+      await Voice.start('en-US');
+    } catch (error) {
+      console.log('Start Listing Error : ', error);
+    }
+  };
+
+  const stopListing = async () => {
+    try {
+      await Voice.stop();
+      Voice.removeAllListeners();
+      setIsListening(false);
+    } catch (error) {
+      console.log('StopListing Error : ', error);
+    }
+  };
 
   const SearchInput = () => {
     if (inputText.trim() === '') {
@@ -33,6 +89,18 @@ export default function App() {
         flatListRef.current.scrollToEnd({animated: true});
       }
     }, 100);
+  };
+
+  const sendMessage = () => {
+    if (recognizedText) {
+      setListData(prevList => [...prevList, recognizedText]);
+      setRecognizedText('');
+
+      // Scroll to bottom after new message is added
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({animated: true});
+      }, 100); // Delay to ensure the layout is updated before scrolling
+    }
   };
 
   const clearAllChat = () => {
@@ -59,7 +127,6 @@ export default function App() {
           Gemini AI
         </Text>
         <TouchableOpacity onPress={clearAllChat} style={styles.clearButton}>
-          {/* <Text style={{color: '#FF0000', fontWeight: 'bold'}}>Clear All</Text> */}
           <SVG.Recyclebin />
         </TouchableOpacity>
       </View>
@@ -88,7 +155,6 @@ export default function App() {
           <TouchableOpacity
             onPress={scrollToBottom}
             style={styles.goToBottomButton}>
-            {/* <Image source={require("./src/assets/images/DownArrow.png")} style={styles.Arrow} /> */}
             <SVG.DownArrow />
           </TouchableOpacity>
         </View>
@@ -108,6 +174,33 @@ export default function App() {
           <SVG.SendIcon />
         </TouchableOpacity>
       </View>
+
+      {/* Voice Functionality */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Type your message..."
+          value={recognizedText}
+          onChangeText={text => setRecognizedText(text)}
+        />
+        <TouchableOpacity
+          onPress={() => {
+            isListening ? stopListing() : startListing();
+          }}
+          style={styles.voiceButton}>
+          {isListening ? (
+            <Text style={styles.voiceButtonText}>•••</Text>
+          ) : (
+            <Image
+              source={{uri: 'https://cdn-icons-png.flaticon.com/512/4980/4980251.png'}}
+              style={{width: 45, height: 45}}
+            />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+          <Text style={styles.sendButtonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -115,7 +208,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: 16,
     backgroundColor: '#ffffff',
   },
   header: {
@@ -130,14 +222,6 @@ const styles = StyleSheet.create({
   icon: {
     width: 60,
     height: 60,
-  },
-  message: {
-    width: 40,
-    height: 40,
-  },
-  Arrow: {
-    width: 20,
-    height: 20,
   },
   clearButton: {
     padding: 8,
@@ -175,12 +259,39 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#f1f2f3",
-    width: '90%',
+    width: '60%',
     fontSize: 16,
     paddingVertical: 15,
     paddingHorizontal: 24,
     borderRadius: 32,
     borderWidth: 0.1,
     marginLeft: 11,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: 'white',
+  },
+  voiceButton: {
+    marginLeft: 10,
+    fontSize: 24,
+  },
+  voiceButtonText: {
+    fontSize: 24,
+    height: 45,
+  },
+  sendButton: {
+    marginLeft: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#FF6969',
+    borderRadius: 20,
+  },
+  sendButtonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
